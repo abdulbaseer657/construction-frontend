@@ -186,33 +186,52 @@ function FormComponent() {
       </div>
     );
   };
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const output = {};
   
-    // Loop through each selected template
+    // Prepare data for submission
     selectedTemplates.forEach((templateId) => {
       const templateData = {};
   
-      // Loop through each field in the template form
       templateForms[templateId].forEach(field => {
         const fieldName = `${templateId}_${field.name}`;
-        // Check if the field has a selected value, otherwise use default value
-        templateData[field.name] = formData[fieldName] !== undefined ? formData[fieldName] : (field.type === 'multi-select' ? [] : field.defaultValue);
+        templateData[field.name] = formData[fieldName] || (field.type === 'multi-select' ? [] : field.defaultValue);
       });
   
-      // If Template 1 is selected and a current material is set, include additional material-dependent fields
       if (templateId === 2 && currentMaterial) {
         materialDependentFields[currentMaterial].forEach(field => {
           templateData[field.name] = formData[`${templateId}_${field.name}`] || (field.type === 'multi-select' ? [] : field.defaultValue);
         });
       }
   
-      // Assign template data to the output object
       output[`Template ${templateId}`] = templateData;
     });
   
-    console.log('Form Data:', output);
+    console.log('Form Data to Submit:', output);
+  
+    // Make the POST request
+    try {
+      const response = await fetch('http://localhost:8000/create-html', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(output)
+      });
+  
+      const responseData = await response.json();
+      if (response.ok) {
+        console.log('Success:', responseData);
+        alert('Form submitted successfully!');
+        window.location.reload();
+      } else {
+        throw new Error(responseData.message || 'Failed to submit form');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Error submitting form: ' + error.message);
+    }
   };
   
   // const handleSubmit = (e) => {

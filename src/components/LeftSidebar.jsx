@@ -1,31 +1,29 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import {
-  Bars3Icon,
-  HomeIcon,
-  UsersIcon,
-  FolderIcon,
-  CalendarIcon,
-  DocumentDuplicateIcon,
-  ChartPieIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+import { FolderIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-const navigation = [
-  { name: 'Dashboard', href: 'https://arxiv.org/pdf/2307.06435.pdf', icon: FolderIcon, current: false },
-  { name: 'Team', href: 'https://arxiv.org/pdf/2307.06435.pdf', icon: FolderIcon, current: false },
-  { name: 'Projects', href: 'https://arxiv.org/pdf/2307.06435.pdf', icon: FolderIcon, current: false },
-  { name: 'Calendar', href: 'https://arxiv.org/pdf/2307.06435.pdf', icon: FolderIcon, current: false },
-  { name: 'Documents', href: 'https://arxiv.org/pdf/2307.06435.pdf', icon: FolderIcon, current: false },
-  { name: 'Reports', href: 'https://arxiv.org/pdf/2307.06435.pdf', icon: FolderIcon, current: false },
-];
-
 export default function LeftSidebar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [navigation, setNavigation] = useState([]);
+
+  useEffect(() => {
+    fetch('http://localhost:8000/fetch-reports')
+      .then(response => response.json())
+      .then(data => {
+        const formattedData = data.data.map(item => ({
+          name: item.Architect,
+          href: item.AwsLink,
+          icon: FolderIcon,
+          current: false
+        }));
+        setNavigation(formattedData);
+      })
+      .catch(error => console.error('Error fetching reports:', error));
+  }, []);
 
   const handleNavigationClick = (href) => {
     window.open(href, '_blank');
