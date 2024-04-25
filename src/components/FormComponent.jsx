@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 // Configuration for the forms based on templates
 const templateForms = {
-  1: [
+  2: [
     {
       label: "Piping Material",
       type: "select",
@@ -31,10 +31,13 @@ const templateForms = {
       defaultValue: "Add any notes here"
     }
   ],
-  2: [
-    { label: "Job Title", type: "text", name: "jobTitle", defaultValue: "Enter Job Title" },
-    { label: "Company", type: "text", name: "company", defaultValue: "Enter Company Name" }
-  ],
+  1: [
+    { label: "Project", type: "text", name: "Project", defaultValue: "Enter Project" },
+    { label: "P1 Job Number", type: "text", name: "P1 Job Number", defaultValue: "Enter P1 Job Number" },
+    { label: "Architect", type: "text", name: "Architect", defaultValue: "Enter Architect" },
+    { label: "M/E Engineer", type: "text", name: "M/E Engineer", defaultValue: "M/E Engineer" },
+    { label: "Client", type: "text", name: "Client", defaultValue: "Enter Client" }
+    ],
   3: [
     { label: "Hobby", type: "text", name: "hobby", defaultValue: "Describe your hobby" },
     { label: "Favorite Music Genre", type: "select", name: "musicGenre", options: ["Jazz", "Rock", "Classical"], defaultValue: "Select Genre" }
@@ -65,21 +68,22 @@ const materialDefaults = {
 // Additional material dependent fields for dynamic rendering
 const materialDependentFields = {
   PEX: [
-    { label: "Pipe Grade", type: "select", name: "pipeGrade", options: ["Grade A", "Grade B", "Grade C"], defaultValue: "Select Grade" },
-    { label: "Color", type: "select", name: "color", options: ["Red", "Blue", "Green"], defaultValue: "Select Color" },
-    { label: "Fitting Type", type: "text", name: "fittingType", defaultValue: "Specify Fitting Type" }
+    { label: "Pipe Grade", type: "select", name: "pipeGrade", options: ["Non-Barrier, ASTM F876, SDR9, Roll", "Non-Barrier, ASTM F876, SDR9, Straight Length", "Oxygen Barrier, ASTM F876, SDR9, Roll","Oxygen Barrier, ASTM F876, SDR9, Straight Length"], defaultValue: "Select Grade" },
+    { label: "Color", type: "select", name: "color", options: ["Natural", "Yellow", "Green"], defaultValue: "Select Color" },
+    { label: "Fitting Type", type: "select", name: "fittingType", options: ["PEX EP (Engineered Plastic)", "abc", "def"], defaultValue: "Specify Fitting Type" }
   ],
   Copper: [
-    { label: "Color", type: "select", name: "color", options: ["Gold", "Rose", "Bronze"], defaultValue: "Select Color" },
-    { label: "Type", type: "select", name: "type", options: ["Type L", "Type M", "Type K"], defaultValue: "Select Type" },
-    { label: "Fitting Type", type: "text", name: "fittingType", defaultValue: "Specify Fitting Type" },
-    { label: "Joint Type", type: "text", name: "jointType", defaultValue: "Specify Joint Type" }
+    { label: "Grade", type: "select", name: "Grade", options: ["Type L", "Type M", "Type K"], defaultValue: "Select Color" },
+    // { label: "Color", type: "select", name: "color", options: ["Gold", "Rose", "Bronze"], defaultValue: "Select Color" },
+    { label: "Type", type: "select", name: "type", options: ["Hard, Seamless Water Tube, ASTM B88", "Soft, Seamless Water Tube, ASTM B88"], defaultValue: "Select Type" },
+    { label: "Fitting Type", type: "select", name: "fittingType", options:  ["Copper Wrot, Pressure with pulled Tees", "Copper Wrot, Pressure", "Copper Wrot, Pressed Joint with Pulled Tees", "Copper Wrot, Pressed Joint"], defaultValue: "Specify Fitting Type" },
+    { label: "Joint Type", type: "select", name: "jointType", options:["Soldered", "Silfos"], defaultValue: "Specify Joint Type" }
   ],
   "Stainless Steel": [
-    { label: "Type", type: "select", name: "type", options: ["304", "316"], defaultValue: "Select Type" },
-    { label: "Schedule", type: "select", name: "schedule", options: ["5S", "10S", "40S"], defaultValue: "Select Schedule" },
-    { label: "Fitting Type", type: "text", name: "fittingType", defaultValue: "Specify Fitting Type" },
-    { label: "Joint Type", type: "text", name: "jointType", defaultValue: "Specify Joint Type" }
+    { label: "Grade", type: "select", name: "type", options: ["Non_Barrier", "StraightRoll", "Oxygen Roll", "Oxygen Straight Roll"], defaultValue: "Select Type" },
+    { label: "Schedule", type: "select", name: "schedule", options:["Schedule 10", "Standard Weight", "Schedule 40", "Extra Heavy", "Schedule 80"], defaultValue: "Select Schedule" },
+    { label: "Fitting Type", type: "select", name: "fittingType", options: ["Schedule 10", "xyz"], defaultValue: "Specify Fitting Type" },
+    { label: "Joint Type", type: "select", name: "jointType", options: ["Buttweld", "xyz"], defaultValue: "Specify Joint Type" }
   ]
 };
 
@@ -182,7 +186,6 @@ function FormComponent() {
       </div>
     );
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     const output = {};
@@ -194,13 +197,14 @@ function FormComponent() {
       // Loop through each field in the template form
       templateForms[templateId].forEach(field => {
         const fieldName = `${templateId}_${field.name}`;
-        templateData[field.name] = formData[fieldName] || (field.type === 'multi-select' ? [] : '');
+        // Check if the field has a selected value, otherwise use default value
+        templateData[field.name] = formData[fieldName] !== undefined ? formData[fieldName] : (field.type === 'multi-select' ? [] : field.defaultValue);
       });
   
-      // If Template 1 is selected, include additional material-dependent fields
-      if (templateId === 1 && currentMaterial) {
+      // If Template 1 is selected and a current material is set, include additional material-dependent fields
+      if (templateId === 2 && currentMaterial) {
         materialDependentFields[currentMaterial].forEach(field => {
-          templateData[field.name] = formData[`${templateId}_${field.name}`] || (field.type === 'multi-select' ? [] : '');
+          templateData[field.name] = formData[`${templateId}_${field.name}`] || (field.type === 'multi-select' ? [] : field.defaultValue);
         });
       }
   
@@ -210,6 +214,34 @@ function FormComponent() {
   
     console.log('Form Data:', output);
   };
+  
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   const output = {};
+  
+  //   // Loop through each selected template
+  //   selectedTemplates.forEach((templateId) => {
+  //     const templateData = {};
+  
+  //     // Loop through each field in the template form
+  //     templateForms[templateId].forEach(field => {
+  //       const fieldName = `${templateId}_${field.name}`;
+  //       templateData[field.name] = formData[fieldName] || (field.type === 'multi-select' ? [] : '');
+  //     });
+  
+  //     // If Template 1 is selected, include additional material-dependent fields
+  //     if (templateId === 1 && currentMaterial) {
+  //       materialDependentFields[currentMaterial].forEach(field => {
+  //         templateData[field.name] = formData[`${templateId}_${field.name}`] || (field.type === 'multi-select' ? [] : '');
+  //       });
+  //     }
+  
+  //     // Assign template data to the output object
+  //     output[`Template ${templateId}`] = templateData;
+  //   });
+  
+  //   console.log('Form Data:', output);
+  // };
   
   
 
@@ -231,7 +263,7 @@ function FormComponent() {
           <div key={templateId} className="mb-6">
             <h3 className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2">Template {templateId} Form:</h3>
             {templateForms[templateId].map(field => renderField(field, templateId))}
-            {templateId === 1 && currentMaterial && materialDependentFields[currentMaterial].map(field => renderField(field, templateId))}
+            {templateId === 2 && currentMaterial && materialDependentFields[currentMaterial].map(field => renderField(field, templateId))}
           </div>
         ))}
         <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
